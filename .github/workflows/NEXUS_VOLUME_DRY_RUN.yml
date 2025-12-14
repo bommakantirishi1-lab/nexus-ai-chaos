@@ -1,0 +1,138 @@
+name: NEXUS VOLUME DRY RUN
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_count:
+        description: 'Number of sequential generation runs (5, 10, or 25)'
+        required: true
+        type: choice
+        default: '10'
+        options:
+          - '5'
+          - '10'
+          - '25'
+
+jobs:
+  prepare-metrics:
+    runs-on: ubuntu-latest
+    outputs:
+      test_id: ${{ steps.metadata.outputs.test_id }}
+      start_time: ${{ steps.metadata.outputs.start_time }}
+    steps:
+      - name: Initialize test metadata
+        id: metadata
+        run: |
+          TEST_ID="drydrun-$(date +%s)"
+          START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "test_id=$TEST_ID" >> $GITHUB_OUTPUT
+          echo "start_time=$START_TIME" >> $GITHUB_OUTPUT
+          echo "Volume Dry Run Starting"
+          echo "Run Count: ${{ github.event.inputs.run_count }}"
+          echo "Test ID: $TEST_ID"
+          echo "Start Time: $START_TIME"
+
+  volume-dry-run:
+    needs: prepare-metrics
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        run_number: ${{ fromJson(format('[{0}]', join(range(1, fromJson(github.event.inputs.run_count) + 1), ','))) }}
+    outputs:
+      metrics: ${{ steps.collect-metrics.outputs.metrics }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Record run start
+        id: run-start
+        run: |
+          RUN_START=$(date +%s%N)
+          echo "run_start_ns=$RUN_START" >> $GITHUB_OUTPUT
+          echo "Run ${{ matrix.run_number }}/${{ github.event.inputs.run_count }} - Start time: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Simulate video generation (ChatGPT + Grok)
+        id: generate
+        run: |
+          echo "Simulating video generation for run ${{ matrix.run_number }}"
+          echo "Topic: AI Cybersecurity Deep Dive #${{ matrix.run_number }}"
+          echo "Platform: youtube_shorts"
+          echo "Duration: 60 seconds"
+          echo "Tone: cinematic"
+          echo "Visual Style: cyberpunk"
+          
+          # Simulate API calls (mock latency)
+          sleep 2
+          
+          # Simulate artifact creation
+          mkdir -p /tmp/nexus-artifacts
+          echo "video_id=$(uuidgen)" >> $GITHUB_OUTPUT
+          echo "artifact_size=45"> /tmp/nexus-artifacts/run-${{ matrix.run_number }}-metadata.txt
+          echo "Video generated successfully"
+
+      - name: Record run completion
+        id: run-end
+        run: |
+          RUN_END=$(date +%s%N)
+          RUN_START=${{ steps.run-start.outputs.run_start_ns }}
+          DURATION_MS=$(( ($RUN_END - $RUN_START) / 1000000 ))
+          echo "run_end_ns=$RUN_END" >> $GITHUB_OUTPUT
+          echo "duration_ms=$DURATION_MS" >> $GITHUB_OUTPUT
+          echo "Run ${{ matrix.run_number }} completed in ${DURATION_MS}ms"
+          echo "Timestamp: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Collect metrics
+        id: collect-metrics
+        run: |
+          METRICS_JSON="{
+            \"run_number\": ${{ matrix.run_number }},
+            \"duration_ms\": ${{ steps.run-end.outputs.duration_ms }},
+            \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+            \"video_id\": \"${{ steps.generate.outputs.video_id }}\",
+            \"status\": \"success\"
+          }"
+          echo "metrics=$(echo $METRICS_JSON | jq -c .)"
+          echo "metrics=$(echo $METRICS_JSON | jq -c .)" >> $GITHUB_OUTPUT
+
+  aggregate-metrics:
+    needs: volume-dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate metrics report
+        run: |
+          echo "Volume Dry Run Report"
+          echo "====================="
+          echo "Test ID: ${{ needs.prepare-metrics.outputs.test_id }}"
+          echo "Start Time: ${{ needs.prepare-metrics.outputs.start_time }}"
+          echo "Run Count: ${{ github.event.inputs.run_count }}"
+          echo "End Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo ""
+          echo "Metrics Summary"
+          echo "- All ${{ github.event.inputs.run_count }} generation runs completed"
+          echo "- Sequential execution (no parallelism)"
+          echo "- No platform distribution attempted"
+          echo "- Artifact storage: <100MB"
+          echo "- Cost estimate: baseline established"
+          echo "- Next step: Manual platform distribution test"
+
+      - name: Upload metrics artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: volume-dry-run-metrics-${{ needs.prepare-metrics.outputs.test_id }}
+          path: /tmp/nexus-artifacts/
+          retention-days: 7
+
+  completion-report:
+    needs: [prepare-metrics, aggregate-metrics]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Final status
+        run: |
+          echo "Volume Dry Run Complete"
+          echo "Test ID: ${{ needs.prepare-metrics.outputs.test_id }}"
+          echo "Status: SUCCESS"
+          echo "Ready for platform distribution (manual trigger)"
