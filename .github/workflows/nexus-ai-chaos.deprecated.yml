@@ -1,3 +1,8 @@
+# ⚠️ DEPRECATED WORKFLOW
+# This workflow has been deprecated and replaced with NEXUS_AI_CHAOS_PIPELINE.yml
+# Kept for reference and historical purposes only
+# Do not use this workflow for new implementations
+
 name: NEXUS_AI_CHAOS_PIPELINE
 
 on:
