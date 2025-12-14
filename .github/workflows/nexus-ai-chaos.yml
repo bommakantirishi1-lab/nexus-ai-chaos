@@ -184,3 +184,12 @@ jobs:
           echo "Tone: ${TONE}"
           echo "Visual Style: ${VISUAL_STYLE}"
           echo "Status: SUCCESS (dry run validation)"
+
+              - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: nexus-artifacts-${{ github.run_id }}
+        path: |
+          /tmp/output/
+        retention-days: 7
