@@ -1,0 +1,226 @@
+================================================================================
+NEXUS: AI CHAOS - PRODUCTION WORKFLOW SPECIFICATION
+================================================================================
+Channel: NEXUS: AI CHAOS
+Content Type: Vertical short-form video (max 60 seconds)
+Platforms: YouTube Shorts, Instagram Reels, X Video
+Audience: Cybersecurity professionals, AI researchers, threat hunters
+
+================================================================================
+STEP 1: DEPRECATION OF LEGACY WORKFLOWS
+================================================================================
+
+Strategy: Safe disable without deletion
+- Rename legacy workflow: {filename}.deprecated.yml
+- Add header comment explaining deprecation
+- Strip all triggers (no on: events)
+- Retain in .github/workflows for audit trail
+- Cannot execute via UI, CLI, or automation
+
+================================================================================
+STEP 2: NEXUS_AI_CHAOS_PIPELINE ARCHITECTURE
+================================================================================
+
+Pipeline: NEXUS_AI_CHAOS_PIPELINE
+
+Execution Modes:
+1. Manual Trigger (workflow_dispatch)
+   - On-demand via GitHub Actions UI
+   - JSON orchestration input
+   - Immediate deployment
+
+2. Scheduled Execution (cron)
+   - Daily at 06:00 UTC
+   - Automated content generation
+   - Deterministic defaults
+
+Flow: INPUT -> CHATGPT -> SCENES -> GROK IMAGINE -> VIDEO -> POST-PROCESS -> OUTPUT
+
+================================================================================
+STEP 3: TOOLS & SERVICES
+================================================================================
+
+CHATGPT (OpenAI)
+- Responsibility: Script generation + scene orchestration
+- Input: topic, tone, duration_seconds, cta_required
+- Output: script + scenes array with visual direction
+- Constraints:
+  * Scenes 2-4 seconds each
+  * Hook within first 2 seconds
+  * Dark, authoritative tone
+  * No emojis or hashtags
+
+GROK IMAGINE (xAI)
+- Responsibility: Visual content generation (9:16 vertical)
+- Input: unified prompt synthesizing all scenes
+- Output: high-resolution image asset
+- Requirements:
+  * Vertical-first (9:16 aspect ratio)
+  * Dark cyberpunk aesthetic
+  * High-contrast lighting
+  * Server/AI core visuals
+  * Zero playful elements
+  * First 1.5 seconds weighted for hook impact
+
+POST-PROCESSING
+- Aspect ratio enforcement (9:16 vertical)
+- Caption overlay generation
+- Duration enforcement (max 60 seconds)
+- Audio synthesis (script -> TTS)
+- Watermark/branding application
+- Format conversion (MP4/WebM)
+
+Output Artifacts:
+- video_master.mp4 (source)
+- video_youtube_shorts.mp4 (platform-optimized)
+- video_instagram_reels.mp4 (platform-optimized)
+- video_x_video.mp4 (platform-optimized)
+- metadata.json (title, description, tags, hook_timestamp)
+
+================================================================================
+STEP 4: CONTENT ORCHESTRATION CONTRACT
+================================================================================
+
+INPUT JSON SCHEMA:
+{
+  "topic": "string (required) - cyber/AI security concept",
+  "platform": "youtube_shorts | instagram_reels | x_video (required)",
+  "duration_seconds": "number (required, 15-60)",
+  "tone": "dark | cinematic | educational | hype (required)",
+  "visual_style": "cyberpunk | cinematic | realistic (required)",
+  "cta_required": "boolean (optional, default false)"
+}
+
+VALIDATION RULES:
+- topic must be cyber/AI-related
+- duration_seconds integer between 15-60
+- platform one of three options
+- tone one of four options
+- visual_style one of three options
+- no null values permitted
+
+OUTPUT JSON SCHEMA:
+{
+  "pipeline_run_id": "UUID",
+  "timestamp": "ISO 8601",
+  "input": { ... },
+  "video_assets": {
+    "youtube_shorts": "s3://bucket/video_yt_shorts.mp4",
+    "instagram_reels": "s3://bucket/video_ig_reels.mp4",
+    "x_video": "s3://bucket/video_x.mp4"
+  },
+  "metadata": {
+    "title": "string",
+    "description": "string",
+    "tags": ["string"],
+    "hook_timestamp_ms": "integer"
+  },
+  "status": "success | failure",
+  "error_log": "string (null on success)"
+}
+
+================================================================================
+STEP 5: CHATGPT RESPONSIBILITIES
+================================================================================
+
+Task: Generate high-retention cyber+AI script with deterministic scene structure
+
+Hook Requirements:
+- First 2 seconds: attention-capturing premise
+- Technique: shocking stat, urgent question, or visual threat
+- Goal: immediate viewer engagement
+
+Tone (NEXUS: AI CHAOS Brand):
+- Dark: no light-hearted language
+- Bold: authoritative, confident statements
+- Futuristic: forward-looking, speculative tone
+- Unsettling: tension, urgency, warning undertones
+- NO emojis, NO hashtags
+
+Scene Structure:
+{
+  "scene_number": 1,
+  "duration_ms": 3000,
+  "visual_description": "cinematic direction for visual team",
+  "camera_motion": "pan | zoom | dolly | static",
+  "mood": "dark | intense | technical",
+  "on_screen_text": "optional text overlay"
+}
+
+Constraints:
+- 2-4 seconds per scene (mandatory)
+- No scene < 2s or > 4s
+- Maximum 15 scenes for 60s video
+- Total duration <= duration_seconds
+- Hook fires within first 2 seconds
+
+================================================================================
+STEP 6: GROK IMAGINE RESPONSIBILITIES
+================================================================================
+
+Task: Generate ONE unified visual prompt for entire video journey
+
+Characteristics:
+- Vertical-first (9:16 aspect ratio)
+- Cinematic quality
+- Dark color palette
+- High-contrast lighting
+- Cyberpunk + AI core emphasis
+- First 1.5 seconds weighted for hook impact
+
+Visual Brand Elements (NEXUS: AI CHAOS):
+- Servers with glowing cores
+- Abstract data streams
+- Circuit patterns and traces
+- Red/blue color dominance
+- Tech-forward, authoritative atmosphere
+- Zero playful elements
+- Professional, unsettling vibe
+
+Prompt Template:
+"Cinematic vertical video (9:16), dark cyberpunk aesthetic.
+ Opening 1.5 seconds: [hook visual concept].
+ Progressively: [scene progression].
+ Color: dark reds, deep blues, blacks.
+ Vibe: authoritative, technical, unsettling.
+ Style: high-contrast, professional, futuristic.
+ No playful elements. Emphasis on technological threat/innovation."
+
+================================================================================
+STEP 7: BRANDING RULES (NON-NEGOTIABLE)
+================================================================================
+
+Brand Identity:
+- Channel Name: NEXUS: AI CHAOS
+- Tone: Dark, authoritative, futuristic, unsettling
+- Target Audience: Cybersecurity professionals, AI researchers, threat hunters
+
+Visual Identity:
+- Primary Colors: Red (#FF0000), Blue (#0055FF), Black (#000000)
+- Lighting: Low-key, high-contrast, server/data-centric
+- No friendly visuals, light colors, or casual aesthetics
+- Subject Matter: Servers, AI cores, code, threats, innovation
+
+Content Constraints:
+- Zero emojis
+- Zero hashtags
+- No happiness, positivity, or fun references
+- Dark, forward-looking messaging
+- Technical depth > simplicity
+- Threat-aware language
+
+================================================================================
+IMPLEMENTATION STATUS
+================================================================================
+
+READY FOR IMPLEMENTATION
+
+Deliverables:
+1. nexus-ai-chaos.yml - GitHub Actions workflow (production-ready)
+2. PIPELINE_ARCHITECTURE.md - Complete specification document
+3. NEXUS_SPECIFICATION_SUMMARY.txt - Quick reference (this file)
+4. README.md - Project overview
+
+All outputs structured, deterministic, and enforceable.
+No code specified; all contracts and responsibilities explicit.
+Engineering discipline applied throughout.
