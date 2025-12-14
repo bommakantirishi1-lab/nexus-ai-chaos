@@ -193,5 +193,3 @@ jobs:
         path: |
           /tmp/output/
         retention-days: 7
-
-       
